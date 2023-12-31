@@ -3,8 +3,6 @@ import random
 MAX_DENOM = 100
 
 class Card ():
-  number=0
-  suit='a'
   def __init__(self,suit,number):
     self.suit = suit
     self.number = number
@@ -13,6 +11,7 @@ class Card ():
 cardNumbers = [2,3,4,5,6,7,8,9,'T','J','Q','K','A']
 cardSuits = ['C','D','S','H']
 
+#deck = [Card(suit, number) for suit in cardSuits for num in cardNumbers]
 
 def createDeck(suits,numbers):
   deck=[]
@@ -121,6 +120,20 @@ def checkWin(deck):
       elif deck[i].number == 'A':
         deck[i].number = 14
     return deck
+  
+  def convertToFace(deck):
+    for i in range(5):
+      if deck[i].number == 10:
+        deck[i].number = 'T'
+      elif deck[i].number == 11:
+        deck[i].number = 'J'
+      elif deck[i].number == 12:
+        deck[i].number = 'Q'
+      elif deck[i].number == 13:
+        deck[i].number = 'K'
+      elif deck[i].number == 14:
+        deck[i].number = 'A'
+    return deck
     
   def is_straight(deck):
     a = []
@@ -132,7 +145,9 @@ def checkWin(deck):
       if a[i+1]-a[i] != 1:
         break
     else:
+      deck=convertToFace(deck)
       return True
+    deck=convertToFace(deck)
     return False
   
   def is4oak(deck):
@@ -148,10 +163,20 @@ def checkWin(deck):
 
   def is3oak(deck):
     matchCount=0
+    breakFlag = False
+    toakNum = 0
     for i in range(4):
       for j in range(i+1,5):
-        if deck[i].number == deck[j].number:
-          matchCount+=1
+        if (deck[i].number == deck[j].number) and deck[i].number == toakNum:
+          matchCount=2
+          breakFlag=True
+          break
+        elif deck[i].number == deck[j].number:
+          toakNum = deck[i].number
+          matchCount=1
+        if breakFlag:
+          break
+
     if matchCount==2:
       return True
     else:
@@ -198,8 +223,10 @@ def checkWin(deck):
         if (deck[i].number == deck[j].number) and deck[i].number > 10:
           matchCount+=1
     if matchCount==1:
+      deck = convertToFace(deck)
       return True
     else:
+      deck = convertToFace(deck)
       return False
 
   if is_flush(deck) and is_royal(deck[0]) and is_royal(deck[1]) and is_royal(deck[2]) and is_royal(deck[3]) and is_royal(deck[4]): #royal flush
@@ -233,9 +260,12 @@ def checkWin(deck):
     print("You Lose")
   return winnings
 
-def game(deck):
+def setupGame():
   denom = setDenomination()
   coins = setCoins()
+  return denom, coins
+
+def game(deck, denom, coins):
   totalBet = coins*denom
   print(f'Betting {coins}x${denom} for total bet ${totalBet}')
   deck = shuffleDeck(deck)
@@ -250,18 +280,32 @@ def game(deck):
   displayHand(deck)
   win = checkWin(deck)
   totalWin = win*coins*denom
+  if win == 250 and coins == 5:
+    totalWin = 4000*denom
   print(f'You win ${totalWin}')
   return totalWin - totalBet
 
 def main():
   deck = createDeck(cardSuits,cardNumbers)
+  breakFlag = False
   #print(deck[12].suit + str(deck[12].number))
   balance = setBalance()
   print(f"Starting balance: ${balance}")
   while True:
-    balance += game(deck)
-    print(f'Balance: ${balance}')
-    if input("Play again (y/n)? ") == 'n':
+    denom, coins = setupGame()
+    while True:
+      balance += game(deck, denom, coins)
+      print(f'Balance: ${balance}')
+      print("Play again?\n  'n' = no\n  'c'= change bet\n  Any other key plays again")
+      choice = input("Play again?")
+      if choice == 'n':
+        breakFlag=True
+        break
+      elif choice =='c':
+        break
+    if breakFlag:
       break
+  print(f'you walk away with ${balance}')
+
     
 main()
