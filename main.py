@@ -124,8 +124,8 @@ def main():
         break
     print(f"You are betting ${bet} on {lines} lines.  Total bet is ${totalBet}.")
     balance -= totalBet
-    #slots = get_slot_machine_spin(ROWS,COLS,symbol_count)
-    slots = [['A','A','A'],['A','B','A'],['A','C','A']]
+    slots = get_slot_machine_spin(ROWS,COLS,symbol_count)
+    #slots = [['A','A','A'],['A','B','A'],['A','C','A']]
     print_slot_machine(slots)
     winnings, winning_lines= check_winnings(slots,lines,bet,symbol_value)
     if winnings > 0:
